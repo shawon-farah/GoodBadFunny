@@ -63,6 +63,19 @@
     
     self.weekDates.text = [GBFCommon getWeekStringStartingFrom:self.currentStartDate];
     [self drawCalendarViews];
+    
+    UISwipeGestureRecognizer *rightRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(rightSwipeHandler:)];
+    rightRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
+    [rightRecognizer setNumberOfTouchesRequired:1];
+    //add the your gestureRecognizer , where to detect the touch..
+    [self.dashboardView addGestureRecognizer:rightRecognizer];
+    [rightRecognizer release];
+    
+    UISwipeGestureRecognizer *leftRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(leftSwipeHandler:)];
+    leftRecognizer.direction = UISwipeGestureRecognizerDirectionLeft;
+    [leftRecognizer setNumberOfTouchesRequired:1];
+    [self.dashboardView addGestureRecognizer:leftRecognizer];
+    [leftRecognizer release];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -264,6 +277,18 @@
     self.detailViewController.selectedUser = [[NSUserDefaults standardUserDefaults] valueForKey:USER_ID_KEY];
     
     [self.navigationController pushViewController:self.detailViewController animated:YES];
+}
+
+- (void)leftSwipeHandler:(id)sender
+{
+    [self goPreviousWeek:nil];
+}
+
+- (void)rightSwipeHandler:(id)sender
+{
+    if ([self.nextButton isEnabled]) {
+        [self goNextWeek:nil];
+    }
 }
 
 @end
