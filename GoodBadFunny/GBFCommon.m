@@ -79,8 +79,8 @@
     NSDate *date = [NSDate date];
     NSCalendar *calendar = [NSCalendar currentCalendar];
     NSDateComponents *dateComps = [calendar components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:date];
-    [dateComps setHour:22];
-    [dateComps setMinute:10];
+    [dateComps setHour:21];
+    [dateComps setMinute:30];
     date = [calendar dateFromComponents:dateComps];
     NSLog(@"%@", date);
     UILocalNotification *localNotif = [[UILocalNotification alloc] init];

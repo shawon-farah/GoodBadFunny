@@ -20,8 +20,14 @@
 @property (nonatomic, retain) IBOutlet UIView *calendarView1;
 @property (nonatomic, retain) IBOutlet UIView *calendarView2;
 
+@property (nonatomic, retain) IBOutlet UIButton *nextButton;
+
+@property (strong, nonatomic) NSDate *currentStartDate;
 @property (strong, nonatomic) GBFDetailViewController *detailViewController;
 
+
+- (IBAction)goNextWeek:(id)sender;
+- (IBAction)goPreviousWeek:(id)sender;
 - (IBAction)gotoDayView:(id)sender;
 - (void)gotoDayViewForToday;
 

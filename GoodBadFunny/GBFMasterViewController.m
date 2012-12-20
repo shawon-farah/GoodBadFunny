@@ -14,7 +14,6 @@
 
 @interface GBFMasterViewController () {
     //NSMutableArray *_objects;
-    NSDate *currentStartDate;
 }
 
 @property (nonatomic, retain) NSMutableDictionary *user1Data;
@@ -24,7 +23,7 @@
 
 @implementation GBFMasterViewController
 
-@synthesize firstUser, secondUser, weekDates, dashboardView, calendarView1, calendarView2;
+@synthesize firstUser, secondUser, weekDates, dashboardView, calendarView1, calendarView2, nextButton;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -38,6 +37,7 @@
 - (void)dealloc
 {
     [_detailViewController release];
+    [_currentStartDate release];
     [firstUser release];
     [secondUser release];
     [dashboardView release];
@@ -50,7 +50,8 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
 //    self.navigationItem.leftBarButtonItem = self.editButtonItem;
-    currentStartDate = [NSDate date];
+    self.currentStartDate = [NSDate date];
+    self.nextButton.enabled = false;
     self.title = [NSString stringWithFormat:NSLocalizedString(@"GoodBadFunny", @"Dashboard")];
     
     if ([[NSUserDefaults standardUserDefaults] valueForKey:USER_ID_KEY] > [NSNumber numberWithInt:-1]) {
@@ -60,7 +61,7 @@
         [self showLogin];
     }
     
-    self.weekDates.text = [GBFCommon getWeekStringStartingFrom:[NSDate date]];
+    self.weekDates.text = [GBFCommon getWeekStringStartingFrom:self.currentStartDate];
     [self drawCalendarViews];
 }
 
@@ -107,7 +108,7 @@
     for (int i = 0; i < 7; i++) {
         UIButton *aButton = [[UIButton alloc] init];
         aButton.frame = CGRectMake(((6*i) + (36*i)), 2, 36, 36);
-        double interval = currentStartDate.timeIntervalSince1970 - (DAY_IN_SECONDS * i);
+        double interval = self.currentStartDate.timeIntervalSince1970 - (DAY_IN_SECONDS * i);
         aButton.tag = interval;
         [aButton setTitle:[GBFCommon getShortDayStringFromInterval:interval] forState:UIControlStateNormal];
         aButton.titleLabel.adjustsFontSizeToFitWidth = YES;
@@ -121,7 +122,7 @@
     for (int i = 0; i < 7; i++) {
         UIButton *aButton = [[UIButton alloc] init];
         aButton.frame = CGRectMake(((6*i) + (36*i)), 2, 36, 36);
-        double interval = currentStartDate.timeIntervalSince1970 - (DAY_IN_SECONDS * i);
+        double interval = self.currentStartDate.timeIntervalSince1970 - (DAY_IN_SECONDS * i);
         aButton.tag = interval;
         [aButton setTitle:[GBFCommon getShortDayStringFromInterval:interval] forState:UIControlStateNormal];
         aButton.titleLabel.adjustsFontSizeToFitWidth = YES;
@@ -206,6 +207,29 @@
         [userDefaults setValue:[NSNumber numberWithInt:1] forKey:USER_ID_KEY];
     }
     [self fetchData];
+}
+
+- (IBAction)goNextWeek:(id)sender
+{
+    double interval = self.currentStartDate.timeIntervalSince1970 + (DAY_IN_SECONDS * 7);
+    self.currentStartDate = [NSDate dateWithTimeIntervalSince1970:interval];
+    self.weekDates.text = [GBFCommon getWeekStringStartingFrom:self.currentStartDate];
+    [self drawCalendarViews];
+    [self configureCalendarViews];
+//    NSComparisonResult result = [self.currentStartDate compare:[NSDate date]];
+    if ([[GBFCommon getStandardDateStringFromInterval:self.currentStartDate.timeIntervalSince1970] isEqualToString:[GBFCommon getStandardDateStringFromInterval:[[NSDate date] timeIntervalSince1970]]]) {
+        self.nextButton.enabled = false;
+    }
+}
+
+- (IBAction)goPreviousWeek:(id)sender
+{
+    double interval = self.currentStartDate.timeIntervalSince1970 - (DAY_IN_SECONDS * 7);
+    self.currentStartDate = [NSDate dateWithTimeIntervalSince1970:interval];
+    self.weekDates.text = [GBFCommon getWeekStringStartingFrom:self.currentStartDate];
+    [self drawCalendarViews];
+    [self configureCalendarViews];
+    self.nextButton.enabled = true;
 }
 
 - (IBAction)gotoDayView:(id)sender
