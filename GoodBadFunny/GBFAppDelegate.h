@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "GBFCommon.h"
 
 @interface GBFAppDelegate : UIResponder <UIApplicationDelegate>
 

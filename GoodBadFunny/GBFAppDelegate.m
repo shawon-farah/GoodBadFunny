@@ -33,6 +33,11 @@
     self.navigationController = [[[UINavigationController alloc] initWithRootViewController:masterViewController] autorelease];
     self.window.rootViewController = self.navigationController;
     [self.window makeKeyAndVisible];
+    
+    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"hasNotification"]) {
+        [GBFCommon setLocalNotification];
+    }
+    
     return YES;
 }
 
@@ -62,5 +67,49 @@
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
+
+- (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification
+{
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"GoodBadFunny" message:@"It's time to input your GoodBadFunny" delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Do It", @"Later", nil];
+    [alertView show];
+    [alertView release];
+    application.applicationIconBadgeNumber = notification.applicationIconBadgeNumber - 1;
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    switch (buttonIndex) {
+        case 0:
+            break;
+            
+        case 1:
+        {
+            NSNumber *userId = [[NSUserDefaults standardUserDefaults] valueForKey:USER_ID_KEY];
+            if (userId.intValue > -1) {
+                if ([self.navigationController.visibleViewController isKindOfClass:[GBFMasterViewController class]]) {
+                    GBFMasterViewController *dashboardVC = (GBFMasterViewController*)[self.navigationController visibleViewController];
+                    [dashboardVC gotoDayViewForToday];
+                } else {
+                    for (UIViewController *viewController in self.navigationController.viewControllers) {
+                        if ([viewController isKindOfClass:[GBFMasterViewController class]]) {
+                            GBFMasterViewController *dashboardView = (GBFMasterViewController*)viewController;
+                            [self.navigationController popToViewController:dashboardView animated:NO];
+                            [dashboardView gotoDayViewForToday];
+                        }
+                    }
+                }
+            }
+        }
+            break;
+            
+        case 2:
+            [GBFCommon delayLocalNotification];
+            break;
+            
+        default:
+            break;
+    }
+}
+    
 
 @end

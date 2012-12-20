@@ -22,7 +22,7 @@
 
 @property (strong, nonatomic) GBFDetailViewController *detailViewController;
 
-- (IBAction)user1DayButtonTapped:(id)sender;
-- (IBAction)user2DayButtonTapped:(id)sender;
+- (IBAction)gotoDayView:(id)sender;
+- (void)gotoDayViewForToday;
 
 @end

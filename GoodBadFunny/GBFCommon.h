@@ -23,4 +23,7 @@
 
 + (void)showNotificationWithTitle:(NSString*)_title message:(NSString*)_message delegate:(id)delegate tag:(int)_tag;
 
++ (void)setLocalNotification;
++ (void)delayLocalNotification;
+
 @end

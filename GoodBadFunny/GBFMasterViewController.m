@@ -45,49 +45,21 @@
     [super dealloc];
 }
 
-- (void)setLocalNotification
-{
-    NSDate *date = [NSDate date];
-    NSCalendar *calendar = [NSCalendar currentCalendar];
-    NSDateComponents *dateComps = [calendar components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:date];
-    [dateComps setHour:[dateComps hour]];
-    [dateComps setMinute:[dateComps minute]+2];
-    date = [calendar dateFromComponents:dateComps];
-    [dateComps release];
-    
-    UILocalNotification *localNotif = [[UILocalNotification alloc] init];
-    if (localNotif == nil)
-        return;
-    localNotif.fireDate = date;
-    localNotif.timeZone = [NSTimeZone defaultTimeZone];
-    localNotif.repeatInterval = NSDayCalendarUnit;
-    
-    localNotif.alertBody = NSLocalizedString(@"It\'s time to input your GoodBadFunny.", nil);
-    localNotif.alertAction = NSLocalizedString(@"Do It", nil);
-    
-    [[UIApplication sharedApplication] scheduleLocalNotification:localNotif];
-    [localNotif release];
-    
-    [[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"hasNotification"];
-}
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
 //    self.navigationItem.leftBarButtonItem = self.editButtonItem;
     currentStartDate = [NSDate date];
-    
-//    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"hasNotification"]) {
-//        [self setLocalNotification];
-//    }
-    
-    dashboardView.hidden = TRUE;
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"Please identify yourself." delegate:self cancelButtonTitle:nil otherButtonTitles:@"David", @"Jeanette", nil];
-    [alertView show];
-    [alertView release];
-    
     self.title = [NSString stringWithFormat:NSLocalizedString(@"GoodBadFunny", @"Dashboard")];
+    
+    if ([[NSUserDefaults standardUserDefaults] valueForKey:USER_ID_KEY] > [NSNumber numberWithInt:-1]) {
+        dashboardView.hidden = FALSE;
+    } else {
+        dashboardView.hidden = TRUE;
+        [self showLogin];
+    }
+    
     self.weekDates.text = [GBFCommon getWeekStringStartingFrom:[NSDate date]];
     [self drawCalendarViews];
 }
@@ -99,13 +71,35 @@
     if (!dashboardView.hidden) {
         [self fetchData];
     }
-//    [self configureCalendarViews];
 }
+
+//- (void)viewDidAppear:(BOOL)animated
+//{
+//    [super viewDidAppear:animated];
+//    if (!dashboardView.hidden) {
+//        [self fetchData];
+//    }
+//}
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (void)showLogin
+{
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"Please identify yourself." delegate:self cancelButtonTitle:nil otherButtonTitles:@"David", @"Jeanette", nil];
+    [alertView show];
+    [alertView release];
+}
+
+- (IBAction)logout:(id)sender
+{
+    dashboardView.hidden = true;
+    [[NSUserDefaults standardUserDefaults] setObject:NULL forKey:USER_NAME_KEY];
+    [[NSUserDefaults standardUserDefaults] setValue:[NSNumber numberWithInt:-1] forKey:USER_ID_KEY];
+    [self showLogin];
 }
 
 - (void)drawCalendarViews
@@ -120,7 +114,7 @@
         aButton.titleLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:14.0];
         aButton.backgroundColor = [UIColor clearColor];
         aButton.titleLabel.textColor = [UIColor clearColor];
-        [aButton addTarget:self action:@selector(user1DayButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+        [aButton addTarget:self action:@selector(gotoDayView:) forControlEvents:UIControlEventTouchUpInside];
         [self.calendarView1 addSubview:aButton];
     }
     
@@ -134,7 +128,7 @@
         aButton.titleLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:14.0];
         aButton.backgroundColor = [UIColor clearColor];
         aButton.titleLabel.textColor = [UIColor clearColor];
-        [aButton addTarget:self action:@selector(user1DayButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+        [aButton addTarget:self action:@selector(gotoDayView:) forControlEvents:UIControlEventTouchUpInside];
         [self.calendarView2 addSubview:aButton];
     }
 }
@@ -148,7 +142,7 @@
             for (int i = 0; i < arr.count; i++) {
                 PFObject *object = [arr objectAtIndex:i];
                 NSString *dateString = [GBFCommon getStandardDateStringFromInterval:[(NSDate*)[object objectForKey:@"dateForGBF"] timeIntervalSince1970]];
-                NSLog(@"data date: %@", dateString);
+//                NSLog(@"data date: %@", dateString);
                 if ([[object objectForKey:@"user_id"] integerValue] == 1)
                     self.user1Data[dateString] = object;
                 else
@@ -214,7 +208,7 @@
     [self fetchData];
 }
 
-- (IBAction)user1DayButtonTapped:(id)sender
+- (IBAction)gotoDayView:(id)sender
 {
     UIButton *aButton = (UIButton*)sender;
     UIView *view = [aButton superview];
@@ -239,11 +233,13 @@
     [self.navigationController pushViewController:self.detailViewController animated:YES];
 }
 
-- (IBAction)user2DayButtonTapped:(id)sender
+- (void)gotoDayViewForToday
 {
-    UIButton *aButton = (UIButton*)sender;
-    UIView *view = [aButton superview];
-    NSLog(@"view tag %d, button title %@", view.tag, aButton.titleLabel.text);
+    self.detailViewController = [[GBFDetailViewController alloc] initWithNibName:@"GBFDetailViewController" bundle:nil];
+    self.detailViewController.currentDate = [NSDate date];
+    self.detailViewController.selectedUser = [[NSUserDefaults standardUserDefaults] valueForKey:USER_ID_KEY];
+    
+    [self.navigationController pushViewController:self.detailViewController animated:YES];
 }
 
 @end

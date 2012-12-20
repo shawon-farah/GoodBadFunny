@@ -73,4 +73,57 @@
     [alertView release];
 }
 
++ (void)setLocalNotification
+{
+    [[UIApplication sharedApplication] cancelAllLocalNotifications];
+    NSDate *date = [NSDate date];
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDateComponents *dateComps = [calendar components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:date];
+    [dateComps setHour:22];
+    [dateComps setMinute:10];
+    date = [calendar dateFromComponents:dateComps];
+    NSLog(@"%@", date);
+    UILocalNotification *localNotif = [[UILocalNotification alloc] init];
+    if (localNotif == nil)
+        return;
+    localNotif.fireDate = date;
+    localNotif.timeZone = [NSTimeZone defaultTimeZone];
+    localNotif.repeatInterval = NSDayCalendarUnit;
+    
+    localNotif.alertBody = NSLocalizedString(@"GoodBadFunny Reminder.", nil);
+    localNotif.alertAction = NSLocalizedString(@"View", nil);
+//    localNotif.hasAction = true;
+    
+    localNotif.soundName = UILocalNotificationDefaultSoundName;
+    localNotif.applicationIconBadgeNumber = 1;
+    
+    [[UIApplication sharedApplication] scheduleLocalNotification:localNotif];
+    [localNotif release];
+    
+    [[NSUserDefaults standardUserDefaults] setBool:TRUE forKey:@"hasNotification"];
+}
+
++ (void)delayLocalNotification
+{
+    NSDate *aDate = [[[NSDate alloc] init] autorelease];
+    double interval = aDate.timeIntervalSince1970 + (15 * 60);
+    aDate = [NSDate dateWithTimeIntervalSince1970:interval];
+    
+    UILocalNotification *localNotif = [[UILocalNotification alloc] init];
+    if (localNotif == nil)
+        return;
+    localNotif.fireDate = aDate;
+    localNotif.timeZone = [NSTimeZone defaultTimeZone];
+//    localNotif.repeatInterval = NSDayCalendarUnit;
+    
+    localNotif.alertBody = NSLocalizedString(@"GoodBadFunny Reminder.", nil);
+    localNotif.alertAction = NSLocalizedString(@"View", nil);
+    
+    localNotif.soundName = UILocalNotificationDefaultSoundName;
+    localNotif.applicationIconBadgeNumber = 1;
+    
+    [[UIApplication sharedApplication] scheduleLocalNotification:localNotif];
+    [localNotif release];
+}
+
 @end
