@@ -629,25 +629,17 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">GBFDetailViewController</string>
 					<string key="superclassName">UIViewController</string>
-					<dictionary class="NSMutableDictionary" key="actions">
-						<string key="gotoNextDay:">id</string>
-						<string key="gotoPreviousDay:">id</string>
-						<string key="shareOnParse:">id</string>
-					</dictionary>
-					<dictionary class="NSMutableDictionary" key="actionInfosByName">
-						<object class="IBActionInfo" key="gotoNextDay:">
-							<string key="name">gotoNextDay:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="gotoPreviousDay:">
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">gotoPreviousDay:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">gotoPreviousDay:</string>
+						<object class="IBActionInfo" key="NS.object.0">
 							<string key="name">gotoPreviousDay:</string>
 							<string key="candidateClassName">id</string>
 						</object>
-						<object class="IBActionInfo" key="shareOnParse:">
-							<string key="name">shareOnParse:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-					</dictionary>
+					</object>
 					<dictionary class="NSMutableDictionary" key="outlets">
 						<string key="bad">UITextView</string>
 						<string key="cancel">UIButton</string>

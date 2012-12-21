@@ -7,6 +7,7 @@
 //
 
 #import <Parse/Parse.h>
+#import <QuartzCore/QuartzCore.h>
 #import "GBFMasterViewController.h"
 #import "GBFDetailViewController.h"
 #import "GBFCommon.h"
@@ -49,15 +50,23 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-//    self.navigationItem.leftBarButtonItem = self.editButtonItem;
+    self.loginView.layer.cornerRadius = 10.0f;
+    self.loginView.layer.masksToBounds = YES;
+    self.loginView.layer.borderColor = [UIColor whiteColor].CGColor;
+    self.loginView.layer.borderWidth = 2.0f;
+    
     self.currentStartDate = [NSDate date];
     self.nextButton.enabled = false;
     self.title = [NSString stringWithFormat:NSLocalizedString(@"GoodBadFunny", @"Dashboard")];
     
-    if ([[NSUserDefaults standardUserDefaults] valueForKey:USER_ID_KEY] > [NSNumber numberWithInt:-1]) {
-        dashboardView.hidden = FALSE;
+    self.user1Data = [NSMutableDictionary dictionary];
+    self.user2Data = [NSMutableDictionary dictionary];
+    
+    if ([[[NSUserDefaults standardUserDefaults] valueForKey:USER_ID_KEY] intValue] > -1) {
+        self.dashboardView.hidden = FALSE;
+        self.loginView.hidden = TRUE;
+        [self addNavigationItems];
     } else {
-        dashboardView.hidden = TRUE;
         [self showLogin];
     }
     
@@ -67,7 +76,6 @@
     UISwipeGestureRecognizer *rightRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(rightSwipeHandler:)];
     rightRecognizer.direction = UISwipeGestureRecognizerDirectionRight;
     [rightRecognizer setNumberOfTouchesRequired:1];
-    //add the your gestureRecognizer , where to detect the touch..
     [self.dashboardView addGestureRecognizer:rightRecognizer];
     [rightRecognizer release];
     
@@ -87,14 +95,6 @@
     }
 }
 
-//- (void)viewDidAppear:(BOOL)animated
-//{
-//    [super viewDidAppear:animated];
-//    if (!dashboardView.hidden) {
-//        [self fetchData];
-//    }
-//}
-
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -102,17 +102,18 @@
 }
 
 - (void)showLogin
-{
-    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:nil message:@"Please identify yourself." delegate:self cancelButtonTitle:nil otherButtonTitles:@"David", @"Jeanette", nil];
-    [alertView show];
-    [alertView release];
+{    
+    self.loginView.hidden = false;
+    self.dashboardView.hidden = true;
 }
 
 - (IBAction)logout:(id)sender
 {
-    dashboardView.hidden = true;
+//    dashboardView.hidden = true;
     [[NSUserDefaults standardUserDefaults] setObject:NULL forKey:USER_NAME_KEY];
     [[NSUserDefaults standardUserDefaults] setValue:[NSNumber numberWithInt:-1] forKey:USER_ID_KEY];
+    
+    [self removeNavigationItems];
     [self showLogin];
 }
 
@@ -206,19 +207,29 @@
     }
 }
 
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+- (void)addNavigationItems
 {
-    dashboardView.hidden = false;
-    self.user1Data = [NSMutableDictionary dictionary];
-    self.user2Data = [NSMutableDictionary dictionary];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Logout" style:UIBarButtonItemStyleBordered target:self action:@selector(logout:)];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Refresh" style:UIBarButtonItemStyleBordered target:self action:@selector(fetchData)];
+}
+
+- (void)removeNavigationItems
+{
+    self.navigationItem.rightBarButtonItem = nil;
+    self.navigationItem.leftBarButtonItem = nil;
+}
+
+- (IBAction)loginUser:(id)sender
+{
+    self.loginView.hidden = true;
+    self.dashboardView.hidden = false;
+    
+    UIButton *button = (UIButton*)sender;
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    if (buttonIndex == 0) {
-        [userDefaults setObject:@"David" forKey:USER_NAME_KEY];
-        [userDefaults setValue:[NSNumber numberWithInt:2] forKey:USER_ID_KEY];
-    } else {
-        [userDefaults setObject:@"Jeanette" forKey:USER_NAME_KEY];
-        [userDefaults setValue:[NSNumber numberWithInt:1] forKey:USER_ID_KEY];
-    }
+    [userDefaults setObject:button.titleLabel.text forKey:USER_NAME_KEY];
+    [userDefaults setValue:[NSNumber numberWithInt:button.tag] forKey:USER_ID_KEY];
+    
+    [self addNavigationItems];
     [self fetchData];
 }
 

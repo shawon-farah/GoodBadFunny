@@ -22,10 +22,12 @@
 
 @property (nonatomic, retain) IBOutlet UIButton *nextButton;
 
+@property (strong, nonatomic) IBOutlet UIView *loginView;
 @property (strong, nonatomic) NSDate *currentStartDate;
 @property (strong, nonatomic) GBFDetailViewController *detailViewController;
 
 
+- (IBAction)loginUser:(id)sender;
 - (IBAction)goNextWeek:(id)sender;
 - (IBAction)goPreviousWeek:(id)sender;
 - (IBAction)gotoDayView:(id)sender;
