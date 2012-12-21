@@ -126,4 +126,9 @@
     [localNotif release];
 }
 
++ (BOOL)isToday:(NSDate*)aDay
+{
+    return [[GBFCommon getStandardDateStringFromInterval:aDay.timeIntervalSince1970] isEqualToString:[GBFCommon getStandardDateStringFromInterval:[[NSDate date] timeIntervalSince1970]]];
+}
+
 @end

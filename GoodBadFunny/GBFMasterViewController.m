@@ -258,11 +258,13 @@
     if (view.tag == 1) {
         if (self.user1Data[dateString]) 
             self.detailViewController.detailItem = self.user1Data[dateString];
+        self.detailViewController.currentUserData = self.user1Data;
 //        else
 //            self.detailViewController.detailItem = [PFObject objectWithClassName:PARSE_CLASS_NAME];
     } else {
         if (self.user2Data[dateString]) 
             self.detailViewController.detailItem = self.user2Data[dateString];
+        self.detailViewController.currentUserData = self.user2Data;
 //        else
 //            self.detailViewController.detailItem = [PFObject objectWithClassName:PARSE_CLASS_NAME];
     }
@@ -275,6 +277,10 @@
     self.detailViewController = [[GBFDetailViewController alloc] initWithNibName:@"GBFDetailViewController" bundle:nil];
     self.detailViewController.currentDate = [NSDate date];
     self.detailViewController.selectedUser = [[NSUserDefaults standardUserDefaults] valueForKey:USER_ID_KEY];
+    if (self.detailViewController.selectedUser.intValue == 1) 
+        self.detailViewController.currentUserData = self.user1Data;
+    else
+        self.detailViewController.currentUserData = self.user2Data;
     
     [self.navigationController pushViewController:self.detailViewController animated:YES];
 }

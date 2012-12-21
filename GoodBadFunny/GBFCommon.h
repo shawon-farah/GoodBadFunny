@@ -26,4 +26,6 @@
 + (void)setLocalNotification;
 + (void)delayLocalNotification;
 
++ (BOOL)isToday:(NSDate*)aDay;
+
 @end

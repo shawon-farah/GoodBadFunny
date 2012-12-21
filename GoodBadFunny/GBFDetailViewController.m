@@ -33,22 +33,23 @@
     [_share release];
     [_cancel release];
     [_scrollView release];
+    [_currentUserData release];
     [_dateLabel release];
     [super dealloc];
 }
 
 #pragma mark - Managing the detail item
 
-- (void)setDetailItem:(id)newDetailItem
-{
-    if (_detailItem != newDetailItem) {
-        [_detailItem release];
-        _detailItem = [newDetailItem retain];
-
-        // Update the view.
-        [self configureView];
-    }
-}
+//- (void)setDetailItem:(id)newDetailItem
+//{
+//    if (_detailItem != newDetailItem) {
+//        [_detailItem release];
+//        _detailItem = [newDetailItem retain];
+//
+//        // Update the view.
+//        [self loadDataToView];
+//    }
+//}
 
 - (void)configureView
 {
@@ -69,13 +70,22 @@
         self.cancel.hidden = true;
     }
     
-    // Update the user interface for the detail item.
+    if ([GBFCommon isToday:self.currentDate])
+        self.next.enabled = false;
+}
+
+- (void)loadDataToView
+{
     self.dateLabel.text = [GBFCommon getLongDateStringFromInterval:self.currentDate.timeIntervalSince1970];
     
     if (self.detailItem) {
         self.good.text = [self.detailItem objectForKey:@"good"];
         self.bad.text = [self.detailItem objectForKey:@"bad"];
         self.funny.text = [self.detailItem objectForKey:@"funny"];
+    } else {
+        self.good.text = @"";
+        self.bad.text = @"";
+        self.funny.text = @"";
     }
 }
 
@@ -84,6 +94,7 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     [self configureView];
+    [self loadDataToView];
     
     UITapGestureRecognizer *_recognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     [self.view addGestureRecognizer:_recognizer];
@@ -196,6 +207,28 @@
     if (alertView.tag == 999) {
         [self goBack];
     }
+}
+
+- (IBAction)gotoNextDay:(id)sender
+{
+    double interval = self.currentDate.timeIntervalSince1970 + DAY_IN_SECONDS;
+    self.currentDate = [NSDate dateWithTimeIntervalSince1970:interval];
+    NSString *dayInString = [GBFCommon getStandardDateStringFromInterval:interval];
+    self.detailItem = self.currentUserData[dayInString];
+    [self loadDataToView];
+    if ([GBFCommon isToday:self.currentDate]) 
+        self.next.enabled = false;
+}
+
+- (IBAction)gotoPreviousDay:(id)sender
+{
+    double interval = self.currentDate.timeIntervalSince1970 - DAY_IN_SECONDS;
+    self.currentDate = [NSDate dateWithTimeIntervalSince1970:interval];
+    NSString *dayInString = [GBFCommon getStandardDateStringFromInterval:interval];
+    self.detailItem = self.currentUserData[dayInString];
+    [self loadDataToView];
+    if (![self.next isEnabled]) 
+        self.next.enabled = true;
 }
 							
 @end

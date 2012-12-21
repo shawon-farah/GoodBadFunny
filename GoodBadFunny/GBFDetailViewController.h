@@ -15,6 +15,7 @@
 
 @property (strong, nonatomic) NSDate *currentDate;
 @property (strong, nonatomic) NSNumber *selectedUser;
+@property (strong, nonatomic) NSMutableDictionary *currentUserData;
 @property (strong, nonatomic) id detailItem;
 
 @property (strong, nonatomic) IBOutlet UILabel *dateLabel;
@@ -26,5 +27,6 @@
 
 @property (strong, nonatomic) IBOutlet UIButton *share;
 @property (strong, nonatomic) IBOutlet UIButton *cancel;
+@property (strong, nonatomic) IBOutlet UIButton *next;
 
 @end
