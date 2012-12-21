@@ -131,4 +131,51 @@
     return [[GBFCommon getStandardDateStringFromInterval:aDay.timeIntervalSince1970] isEqualToString:[GBFCommon getStandardDateStringFromInterval:[[NSDate date] timeIntervalSince1970]]];
 }
 
++ (NSString *)getUserName:(int)userId
+{
+    NSString *userName;
+    switch (userId) {
+        case 1:
+            userName = @"Jeanette";
+            break;
+        case 2:
+            userName = @"David";
+            break;
+        case 3:
+            userName = @"Evan";
+            break;
+        case 4:
+            userName = @"User 4";
+            break;
+        case 5:
+            userName = @"User 5";
+            break;
+        case 6:
+            userName = @"User 6";
+            break;
+            
+        default:
+            userName = @"";
+            break;
+    }
+    return userName;
+}
+
++ (NSDate *)getNextWeekDayWithInterval:(double)interval
+{
+    NSDate *nextWeekDay = [NSDate dateWithTimeIntervalSince1970:interval];
+    NSDate *today = [NSDate date];
+    
+    NSDateComponents *nextWeekDayComponent = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:nextWeekDay];
+    NSDateComponents *todayComponent = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:today];
+    
+    if (nextWeekDayComponent.month > todayComponent.month) 
+        return today;
+    else 
+        if (nextWeekDayComponent.day > todayComponent.day) 
+            return today;
+    
+    return nextWeekDay;
+}
+
 @end

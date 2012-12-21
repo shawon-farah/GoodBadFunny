@@ -27,5 +27,7 @@
 + (void)delayLocalNotification;
 
 + (BOOL)isToday:(NSDate*)aDay;
++ (NSString *)getUserName:(int)userId;
++ (NSDate *)getNextWeekDayWithInterval:(double)interval;
 
 @end

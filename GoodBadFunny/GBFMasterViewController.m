@@ -13,12 +13,7 @@
 #import "GBFCommon.h"
 #import "MBProgressHUD.h"
 
-@interface GBFMasterViewController () {
-    //NSMutableArray *_objects;
-}
-
-@property (nonatomic, retain) NSMutableDictionary *user1Data;
-@property (nonatomic, retain) NSMutableDictionary *user2Data;
+@interface GBFMasterViewController () 
 
 @end
 
@@ -57,12 +52,14 @@
     
     self.currentStartDate = [NSDate date];
     self.nextButton.enabled = false;
-    self.title = [NSString stringWithFormat:NSLocalizedString(@"GoodBadFunny", @"Dashboard")];
+    self.title = [NSString stringWithFormat:NSLocalizedString(@"GBF", @"Dashboard")];
     
-    self.user1Data = [NSMutableDictionary dictionary];
-    self.user2Data = [NSMutableDictionary dictionary];
+    self.dataArray = [[NSMutableArray alloc] init];
+    for (int i = 0; i < 6; i++) {
+        [self.dataArray addObject:[NSMutableDictionary dictionary]];
+    }
     
-    if ([[[NSUserDefaults standardUserDefaults] valueForKey:USER_ID_KEY] intValue] > -1) {
+    if ([[[NSUserDefaults standardUserDefaults] valueForKey:USER_ID_KEY] intValue] > 0) {
         self.dashboardView.hidden = FALSE;
         self.loginView.hidden = TRUE;
         [self addNavigationItems];
@@ -71,6 +68,7 @@
     }
     
     self.weekDates.text = [GBFCommon getWeekStringStartingFrom:self.currentStartDate];
+    [self drawHeaderView];
     [self drawCalendarViews];
     
     UISwipeGestureRecognizer *rightRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(rightSwipeHandler:)];
@@ -89,6 +87,7 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    self.usersScrollView.contentSize = CGSizeMake(self.view.frame.size.width, 410);
     
     if (!dashboardView.hidden) {
         [self fetchData];
@@ -109,42 +108,41 @@
 
 - (IBAction)logout:(id)sender
 {
-//    dashboardView.hidden = true;
-    [[NSUserDefaults standardUserDefaults] setObject:NULL forKey:USER_NAME_KEY];
-    [[NSUserDefaults standardUserDefaults] setValue:[NSNumber numberWithInt:-1] forKey:USER_ID_KEY];
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setObject:NULL forKey:USER_NAME_KEY];
+    [userDefaults setValue:[NSNumber numberWithInt:0] forKey:USER_ID_KEY];
     
     [self removeNavigationItems];
     [self showLogin];
 }
 
-- (void)drawCalendarViews
+- (void)drawHeaderView
 {
     for (int i = 0; i < 7; i++) {
-        UIButton *aButton = [[UIButton alloc] init];
-        aButton.frame = CGRectMake(((6*i) + (36*i)), 2, 36, 36);
         double interval = self.currentStartDate.timeIntervalSince1970 - (DAY_IN_SECONDS * i);
-        aButton.tag = interval;
-        [aButton setTitle:[GBFCommon getShortDayStringFromInterval:interval] forState:UIControlStateNormal];
-        aButton.titleLabel.adjustsFontSizeToFitWidth = YES;
-        aButton.titleLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:14.0];
-        aButton.backgroundColor = [UIColor clearColor];
-        aButton.titleLabel.textColor = [UIColor clearColor];
-        [aButton addTarget:self action:@selector(gotoDayView:) forControlEvents:UIControlEventTouchUpInside];
-        [self.calendarView1 addSubview:aButton];
+        UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(((6*i) + (36*i)), 2, 36, 36)];
+        label.backgroundColor = [UIColor clearColor];
+        label.textColor = [UIColor blackColor];
+        label.font = [UIFont fontWithName:@"Helvetica-Bold" size:16.0];
+        label.textAlignment = UITextAlignmentCenter;
+        label.text = [GBFCommon getShortDayStringFromInterval:interval];
+        [self.calendarHeaderView addSubview:label];
     }
-    
-    for (int i = 0; i < 7; i++) {
-        UIButton *aButton = [[UIButton alloc] init];
-        aButton.frame = CGRectMake(((6*i) + (36*i)), 2, 36, 36);
-        double interval = self.currentStartDate.timeIntervalSince1970 - (DAY_IN_SECONDS * i);
-        aButton.tag = interval;
-        [aButton setTitle:[GBFCommon getShortDayStringFromInterval:interval] forState:UIControlStateNormal];
-        aButton.titleLabel.adjustsFontSizeToFitWidth = YES;
-        aButton.titleLabel.font = [UIFont fontWithName:@"Helvetica-Bold" size:14.0];
-        aButton.backgroundColor = [UIColor clearColor];
-        aButton.titleLabel.textColor = [UIColor clearColor];
-        [aButton addTarget:self action:@selector(gotoDayView:) forControlEvents:UIControlEventTouchUpInside];
-        [self.calendarView2 addSubview:aButton];
+}
+
+- (void)drawCalendarViews
+{
+    for (UIView *view in self.usersScrollView.subviews) {
+        if (![view isKindOfClass:[UILabel class]] && ![view isKindOfClass:[UIImageView class]]) {
+            for (int i = 0; i < 7; i++) {
+                UIButton *aButton = [[UIButton alloc] init];
+                aButton.frame = CGRectMake(((6*i) + (36*i)), 2, 36, 36);
+                double interval = self.currentStartDate.timeIntervalSince1970 - (DAY_IN_SECONDS * i);
+                aButton.tag = interval;
+                [aButton addTarget:self action:@selector(gotoDayView:) forControlEvents:UIControlEventTouchUpInside];
+                [view addSubview:aButton];
+            }
+        }
     }
 }
 
@@ -157,14 +155,11 @@
             for (int i = 0; i < arr.count; i++) {
                 PFObject *object = [arr objectAtIndex:i];
                 NSString *dateString = [GBFCommon getStandardDateStringFromInterval:[(NSDate*)[object objectForKey:@"dateForGBF"] timeIntervalSince1970]];
-//                NSLog(@"data date: %@", dateString);
-                if ([[object objectForKey:@"user_id"] integerValue] == 1)
-                    self.user1Data[dateString] = object;
-                else
-                    self.user2Data[dateString] = object;
+                int userId = [[object objectForKey:@"user_id"] intValue];
+                self.dataArray[userId-1][dateString] = object;
             }
         }
-//        [self drawCalendarViews];
+
         [self configureCalendarViews];
         [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
     }];
@@ -173,35 +168,19 @@
 
 - (void)configureCalendarViews
 {
-    NSDate *today = [NSDate date];
-    for (UIButton *aButton in [self.calendarView1 subviews]) {
-        NSString *buttonDay = [GBFCommon getStandardDateStringFromInterval:aButton.tag];
-        if (self.user1Data[buttonDay] != nil) {
-            aButton.backgroundColor = [UIColor greenColor];
-            aButton.titleLabel.textColor = [UIColor whiteColor];
-        } else {
-            if ([buttonDay isEqualToString:[GBFCommon getStandardDateStringFromInterval:today.timeIntervalSince1970]]) {
-                aButton.backgroundColor = [UIColor whiteColor];
-                aButton.titleLabel.textColor = [UIColor blackColor];
-            } else {
-                aButton.backgroundColor = [UIColor redColor];
-                aButton.titleLabel.textColor = [UIColor whiteColor];
-            }
-        }
-    }
-    
-    for (UIButton *aButton in [self.calendarView2 subviews]) {
-        NSString *buttonDay = [GBFCommon getStandardDateStringFromInterval:aButton.tag];
-        if (self.user2Data[buttonDay] != nil) {
-            aButton.backgroundColor = [UIColor greenColor];
-            aButton.titleLabel.textColor = [UIColor whiteColor];
-        } else {
-            if ([buttonDay isEqualToString:[GBFCommon getStandardDateStringFromInterval:today.timeIntervalSince1970]]) {
-                aButton.backgroundColor = [UIColor whiteColor];
-                aButton.titleLabel.textColor = [UIColor blackColor];
-            } else {
-                aButton.backgroundColor = [UIColor redColor];
-                aButton.titleLabel.textColor = [UIColor whiteColor];
+    for (UIView *view in self.usersScrollView.subviews) {
+        if (![view isKindOfClass:[UILabel class]] && ![view isKindOfClass:[UIImageView class]]) {
+            for (UIButton *aButton in [view subviews]) {
+                NSString *buttonDay = [GBFCommon getStandardDateStringFromInterval:aButton.tag];
+                if (self.dataArray[view.tag-1][buttonDay] != nil) {
+                    aButton.backgroundColor = [UIColor greenColor];
+                } else {
+                    if ([GBFCommon isToday:[NSDate dateWithTimeIntervalSince1970:aButton.tag]]) {
+                        aButton.backgroundColor = [UIColor whiteColor];
+                    } else {
+                        aButton.backgroundColor = [UIColor redColor];
+                    }
+                }
             }
         }
     }
@@ -236,12 +215,12 @@
 - (IBAction)goNextWeek:(id)sender
 {
     double interval = self.currentStartDate.timeIntervalSince1970 + (DAY_IN_SECONDS * 7);
-    self.currentStartDate = [NSDate dateWithTimeIntervalSince1970:interval];
+    self.currentStartDate = [GBFCommon getNextWeekDayWithInterval:interval];
     self.weekDates.text = [GBFCommon getWeekStringStartingFrom:self.currentStartDate];
     [self drawCalendarViews];
     [self configureCalendarViews];
-//    NSComparisonResult result = [self.currentStartDate compare:[NSDate date]];
-    if ([[GBFCommon getStandardDateStringFromInterval:self.currentStartDate.timeIntervalSince1970] isEqualToString:[GBFCommon getStandardDateStringFromInterval:[[NSDate date] timeIntervalSince1970]]]) {
+
+    if ([GBFCommon isToday:self.currentStartDate]) {
         self.nextButton.enabled = false;
     }
 }
@@ -266,19 +245,9 @@
     self.detailViewController = [[GBFDetailViewController alloc] initWithNibName:@"GBFDetailViewController" bundle:nil];
     self.detailViewController.currentDate = [NSDate dateWithTimeIntervalSince1970:aButton.tag];
     self.detailViewController.selectedUser = [NSNumber numberWithInt:view.tag];
-    if (view.tag == 1) {
-        if (self.user1Data[dateString]) 
-            self.detailViewController.detailItem = self.user1Data[dateString];
-        self.detailViewController.currentUserData = self.user1Data;
-//        else
-//            self.detailViewController.detailItem = [PFObject objectWithClassName:PARSE_CLASS_NAME];
-    } else {
-        if (self.user2Data[dateString]) 
-            self.detailViewController.detailItem = self.user2Data[dateString];
-        self.detailViewController.currentUserData = self.user2Data;
-//        else
-//            self.detailViewController.detailItem = [PFObject objectWithClassName:PARSE_CLASS_NAME];
-    }
+    self.detailViewController.currentUserData = self.dataArray[view.tag - 1];
+    if (self.dataArray[view.tag-1][dateString])
+        self.detailViewController.detailItem = self.dataArray[view.tag-1][dateString];
     
     [self.navigationController pushViewController:self.detailViewController animated:YES];
 }
@@ -287,11 +256,9 @@
 {
     self.detailViewController = [[GBFDetailViewController alloc] initWithNibName:@"GBFDetailViewController" bundle:nil];
     self.detailViewController.currentDate = [NSDate date];
-    self.detailViewController.selectedUser = [[NSUserDefaults standardUserDefaults] valueForKey:USER_ID_KEY];
-    if (self.detailViewController.selectedUser.intValue == 1) 
-        self.detailViewController.currentUserData = self.user1Data;
-    else
-        self.detailViewController.currentUserData = self.user2Data;
+    NSNumber *userId = [[NSUserDefaults standardUserDefaults] valueForKey:USER_ID_KEY];
+    self.detailViewController.selectedUser = userId;
+    self.detailViewController.currentUserData = self.dataArray[userId.intValue - 1];
     
     [self.navigationController pushViewController:self.detailViewController animated:YES];
 }
