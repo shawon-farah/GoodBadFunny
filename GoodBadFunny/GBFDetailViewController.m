@@ -16,6 +16,7 @@
 @interface GBFDetailViewController ()
 {
     NSUserDefaults *userDefaults;
+    IBOutlet UIView *textFieldsView;
 }
 
 - (void)configureView;
@@ -98,7 +99,7 @@
     [self loadDataToView];
     
     UITapGestureRecognizer *_recognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
-    [self.view addGestureRecognizer:_recognizer];
+    [textFieldsView addGestureRecognizer:_recognizer];
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -218,6 +219,7 @@
 
 - (IBAction)gotoNextDay:(id)sender
 {
+    [self hideKeyboard];
     double interval = self.currentDate.timeIntervalSince1970 + DAY_IN_SECONDS;
     self.currentDate = [NSDate dateWithTimeIntervalSince1970:interval];
     NSString *dayInString = [GBFCommon getStandardDateStringFromInterval:interval];
@@ -229,6 +231,7 @@
 
 - (IBAction)gotoPreviousDay:(id)sender
 {
+    [self hideKeyboard];
     double interval = self.currentDate.timeIntervalSince1970 - DAY_IN_SECONDS;
     self.currentDate = [NSDate dateWithTimeIntervalSince1970:interval];
     NSString *dayInString = [GBFCommon getStandardDateStringFromInterval:interval];
