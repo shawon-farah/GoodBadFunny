@@ -166,14 +166,8 @@
     NSDate *nextWeekDay = [NSDate dateWithTimeIntervalSince1970:interval];
     NSDate *today = [NSDate date];
     
-    NSDateComponents *nextWeekDayComponent = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:nextWeekDay];
-    NSDateComponents *todayComponent = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:today];
-    
-    if (nextWeekDayComponent.month > todayComponent.month) 
+    if ((today.timeIntervalSince1970 - interval) < 0)
         return today;
-    else 
-        if (nextWeekDayComponent.day > todayComponent.day) 
-            return today;
     
     return nextWeekDay;
 }
